@@ -1,0 +1,35 @@
+# Build dependencies (install first)
+setuptools>=65.0.0
+wheel>=0.38.0
+Cython>=0.29.0
+
+# PyTorch with ROCm for AMD RX 6700XT
+# Install separately: pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/rocm5.6
+
+# Core ML/RL - Python 3.12 compatible versions
+gymnasium==0.29.1
+stable-baselines3==2.2.1
+numpy>=1.26.0,<2.0.0
+pandas>=2.1.0
+
+# Optimization
+optuna==3.4.0
+
+# Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.17.0
+
+# Optical Networking (manual implementation)
+networkx>=3.1
+scipy>=1.11.0
+
+# Terminal UI
+rich==13.7.0
+colorama>=0.4.6
+
+# Utilities
+pyyaml>=6.0
+tqdm>=4.66.0
+psutil>=5.9.0
+tensorboard>=2.14.0
