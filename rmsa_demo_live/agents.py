@@ -24,6 +24,7 @@ ACTIVATIONS: Dict[str, nn.Module] = {
     "leaky_relu": nn.LeakyReLU,
     "elu": nn.ELU,
     "silu": nn.SiLU,
+    "gelu": nn.GELU,
 }
 
 

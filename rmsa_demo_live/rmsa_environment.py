@@ -51,6 +51,349 @@ class NSFNETTopology:
         return G
 
 
+class USNETTopology:
+    """USNET topology with 24 nodes and 43 links (more complex)."""
+
+    @staticmethod
+    def create_graph() -> nx.Graph:
+        G = nx.Graph()
+        # USNET nodes (24 major US cities)
+        nodes = list(range(24))
+        G.add_nodes_from(nodes)
+
+        # USNET links with realistic distances (km)
+        edges = [
+            # West Coast backbone
+            (0, 1, 1100),  # Seattle-San Francisco
+            (1, 2, 560),   # SF-LA
+            (2, 3, 200),   # LA-San Diego
+            
+            # Central West
+            (1, 4, 950),   # SF-Salt Lake City
+            (4, 5, 830),   # SLC-Denver
+            (5, 6, 650),   # Denver-Kansas City
+            
+            # South backbone
+            (2, 7, 450),   # LA-Phoenix
+            (7, 8, 1050),  # Phoenix-Dallas
+            (8, 9, 400),   # Dallas-Houston
+            (9, 10, 850),  # Houston-New Orleans
+            
+            # Midwest
+            (6, 11, 500),  # KC-Chicago
+            (11, 12, 450), # Chicago-Detroit
+            (11, 13, 850), # Chicago-Minneapolis
+            (6, 8, 700),   # KC-Dallas
+            
+            # East Coast backbone
+            (14, 15, 340), # Boston-NYC
+            (15, 16, 150), # NYC-Philadelphia
+            (16, 17, 220), # Philly-DC
+            (17, 18, 650), # DC-Atlanta
+            (18, 10, 750), # Atlanta-New Orleans
+            
+            # Cross-country links
+            (5, 11, 1450), # Denver-Chicago
+            (11, 15, 1100),# Chicago-NYC
+            (8, 18, 1200), # Dallas-Atlanta
+            (18, 17, 650), # Atlanta-DC
+            
+            # Northern route
+            (0, 13, 2400), # Seattle-Minneapolis
+            (13, 12, 650), # Minneapolis-Detroit
+            (12, 14, 1050),# Detroit-Boston
+            
+            # Southern route
+            (3, 7, 550),   # SD-Phoenix
+            (9, 19, 350),  # Houston-San Antonio
+            (19, 8, 450),  # San Antonio-Dallas
+            
+            # Additional redundancy
+            (0, 4, 1150),  # Seattle-SLC
+            (4, 6, 950),   # SLC-KC
+            (15, 17, 350), # NYC-DC
+            (11, 14, 1100),# Chicago-Boston
+            (12, 15, 800), # Detroit-NYC
+            (13, 11, 550), # Minneapolis-Chicago
+            
+            # Western interconnects
+            (1, 5, 1500),  # SF-Denver
+            (2, 8, 1750),  # LA-Dallas
+            
+            # Eastern interconnects
+            (14, 16, 450), # Boston-Philly
+            (16, 18, 750), # Philly-Atlanta
+            (17, 10, 1500),# DC-New Orleans
+        ]
+
+        for u, v, dist in edges:
+            G.add_edge(u, v, distance=dist, weight=dist)
+
+        return G
+
+
+class EUROTopology:
+    """European network topology with 19 nodes and 39 links."""
+
+    @staticmethod
+    def build() -> nx.Graph:
+        G = nx.Graph()
+        # 19 European cities
+        nodes = [
+            "London", "Paris", "Amsterdam", "Brussels", "Frankfurt", "Munich", "Zurich",
+            "Milan", "Rome", "Madrid", "Barcelona", "Lisbon", "Copenhagen", "Stockholm",
+            "Oslo", "Vienna", "Prague", "Warsaw", "Berlin"
+        ]
+        for i, city in enumerate(nodes):
+            G.add_node(i, label=city)
+
+        # Distances in km
+        edges = [
+            # Western Europe backbone
+            (0, 1, 340),   # London-Paris
+            (1, 2, 430),   # Paris-Amsterdam
+            (2, 3, 170),   # Amsterdam-Brussels
+            (3, 1, 260),   # Brussels-Paris
+            
+            # Central Europe
+            (2, 18, 580),  # Amsterdam-Berlin
+            (18, 4, 550),  # Berlin-Frankfurt
+            (4, 5, 390),   # Frankfurt-Munich
+            (5, 15, 350),  # Munich-Vienna
+            (15, 16, 250), # Vienna-Prague
+            (16, 18, 280), # Prague-Berlin
+            
+            # Southern Europe
+            (6, 7, 240),   # Zurich-Milan
+            (7, 8, 575),   # Milan-Rome
+            (1, 9, 1050),  # Paris-Madrid
+            (9, 10, 620),  # Madrid-Barcelona
+            (10, 7, 720),  # Barcelona-Milan
+            (9, 11, 500),  # Madrid-Lisbon
+            
+            # Northern Europe
+            (2, 12, 620),  # Amsterdam-Copenhagen
+            (12, 13, 520), # Copenhagen-Stockholm
+            (13, 14, 530), # Stockholm-Oslo
+            (14, 12, 480), # Oslo-Copenhagen
+            
+            # Cross-connections
+            (0, 2, 360),   # London-Amsterdam
+            (4, 6, 310),   # Frankfurt-Zurich
+            (6, 5, 250),   # Zurich-Munich
+            (4, 16, 400),  # Frankfurt-Prague
+            (18, 17, 520), # Berlin-Warsaw
+            (16, 17, 540), # Prague-Warsaw
+            (12, 18, 360), # Copenhagen-Berlin
+            (13, 17, 800), # Stockholm-Warsaw
+            
+            # UK-Europe links
+            (0, 3, 320),   # London-Brussels
+            (0, 4, 640),   # London-Frankfurt
+            
+            # Southern interconnects
+            (1, 6, 490),   # Paris-Zurich
+            (3, 4, 380),   # Brussels-Frankfurt
+            (10, 1, 830),  # Barcelona-Paris
+            (7, 15, 550),  # Milan-Vienna
+            (8, 15, 760),  # Rome-Vienna
+            
+            # Additional redundancy
+            (5, 18, 590),  # Munich-Berlin
+            (4, 12, 680),  # Frankfurt-Copenhagen
+        ]
+
+        for u, v, dist in edges:
+            G.add_edge(u, v, distance=dist, weight=dist)
+
+        return G
+
+
+class UKNETTopology:
+    """UK national network with 21 nodes and 26 links."""
+
+    @staticmethod
+    def build() -> nx.Graph:
+        G = nx.Graph()
+        # 21 UK cities
+        nodes = [
+            "London", "Bristol", "Cardiff", "Birmingham", "Manchester", "Liverpool",
+            "Leeds", "Sheffield", "Nottingham", "Leicester", "Cambridge", "Oxford",
+            "Southampton", "Brighton", "Norwich", "Newcastle", "Edinburgh", "Glasgow",
+            "Aberdeen", "Belfast", "Dublin"
+        ]
+        for i, city in enumerate(nodes):
+            G.add_node(i, label=city)
+
+        # Distances in km
+        edges = [
+            # Southern England
+            (0, 1, 180),   # London-Bristol
+            (0, 10, 80),   # London-Cambridge
+            (0, 11, 90),   # London-Oxford
+            (0, 12, 120),  # London-Southampton
+            (0, 13, 85),   # London-Brighton
+            (10, 14, 100), # Cambridge-Norwich
+            
+            # Midlands
+            (1, 2, 70),    # Bristol-Cardiff
+            (11, 3, 100),  # Oxford-Birmingham
+            (3, 9, 65),    # Birmingham-Leicester
+            (3, 4, 135),   # Birmingham-Manchester
+            (4, 5, 55),    # Manchester-Liverpool
+            (4, 6, 70),    # Manchester-Leeds
+            (6, 7, 55),    # Leeds-Sheffield
+            (7, 8, 60),    # Sheffield-Nottingham
+            (8, 9, 45),    # Nottingham-Leicester
+            
+            # Northern England
+            (6, 15, 145),  # Leeds-Newcastle
+            (15, 16, 170), # Newcastle-Edinburgh
+            (16, 17, 75),  # Edinburgh-Glasgow
+            (17, 18, 195), # Glasgow-Aberdeen
+            
+            # Cross-country links
+            (0, 3, 160),   # London-Birmingham
+            (3, 6, 155),   # Birmingham-Leeds
+            (9, 10, 140),  # Leicester-Cambridge
+            (4, 15, 195),  # Manchester-Newcastle
+            
+            # Ireland connections
+            (5, 19, 215),  # Liverpool-Belfast
+            (19, 20, 165), # Belfast-Dublin
+            (17, 19, 210), # Glasgow-Belfast
+        ]
+
+        for u, v, dist in edges:
+            G.add_edge(u, v, distance=dist, weight=dist)
+
+        return G
+
+
+class JAPANTopology:
+    """Japanese network topology with 12 nodes and 18 links."""
+
+    @staticmethod
+    def build() -> nx.Graph:
+        G = nx.Graph()
+        # 12 Japanese cities
+        nodes = [
+            "Tokyo", "Yokohama", "Osaka", "Kyoto", "Nagoya", "Sapporo",
+            "Fukuoka", "Kobe", "Sendai", "Hiroshima", "Kitakyushu", "Okayama"
+        ]
+        for i, city in enumerate(nodes):
+            G.add_node(i, label=city)
+
+        # Distances in km
+        edges = [
+            # Main Honshu backbone
+            (0, 1, 30),    # Tokyo-Yokohama
+            (0, 4, 350),   # Tokyo-Nagoya
+            (4, 3, 140),   # Nagoya-Kyoto
+            (3, 2, 50),    # Kyoto-Osaka
+            (2, 7, 30),    # Osaka-Kobe
+            
+            # Western Japan
+            (7, 11, 160),  # Kobe-Okayama
+            (11, 9, 160),  # Okayama-Hiroshima
+            (9, 10, 110),  # Hiroshima-Kitakyushu
+            (10, 6, 70),   # Kitakyushu-Fukuoka
+            
+            # Eastern Japan
+            (0, 8, 350),   # Tokyo-Sendai
+            (8, 5, 820),   # Sendai-Sapporo
+            
+            # Cross-connections
+            (1, 4, 330),   # Yokohama-Nagoya
+            (4, 2, 190),   # Nagoya-Osaka
+            (3, 11, 190),  # Kyoto-Okayama
+            (2, 9, 340),   # Osaka-Hiroshima
+            (6, 2, 550),   # Fukuoka-Osaka
+            
+            # Northern route
+            (0, 5, 1150),  # Tokyo-Sapporo (via ferry/tunnel)
+            
+            # Additional connections
+            (1, 8, 330),   # Yokohama-Sendai
+        ]
+
+        for u, v, dist in edges:
+            G.add_edge(u, v, distance=dist, weight=dist)
+
+        return G
+
+
+class BRAZILTopology:
+    """Brazilian network topology with 19 nodes and 31 links."""
+
+    @staticmethod
+    def build() -> nx.Graph:
+        G = nx.Graph()
+        # 19 Brazilian cities
+        nodes = [
+            "Sao Paulo", "Rio de Janeiro", "Brasilia", "Salvador", "Fortaleza",
+            "Belo Horizonte", "Manaus", "Curitiba", "Recife", "Porto Alegre",
+            "Goiania", "Campinas", "Belem", "Vitoria", "Natal", "Campo Grande",
+            "Florianopolis", "Santos", "Maceio"
+        ]
+        for i, city in enumerate(nodes):
+            G.add_node(i, label=city)
+
+        # Distances in km
+        edges = [
+            # Southeast backbone (economic heart)
+            (0, 1, 430),   # SP-Rio
+            (0, 11, 95),   # SP-Campinas
+            (0, 17, 70),   # SP-Santos
+            (0, 5, 585),   # SP-Belo Horizonte
+            (5, 1, 440),   # BH-Rio
+            (5, 13, 520),  # BH-Vitoria
+            
+            # Central Brazil
+            (0, 2, 1015),  # SP-Brasilia
+            (2, 5, 740),   # Brasilia-BH
+            (2, 10, 210),  # Brasilia-Goiania
+            (10, 15, 840), # Goiania-Campo Grande
+            
+            # Northeast backbone
+            (3, 8, 840),   # Salvador-Recife
+            (8, 18, 285),  # Recife-Maceio
+            (18, 3, 630),  # Maceio-Salvador
+            (8, 14, 290),  # Recife-Natal
+            (14, 4, 535),  # Natal-Fortaleza
+            
+            # North region
+            (4, 12, 1600), # Fortaleza-Belem
+            (12, 6, 1290), # Belem-Manaus
+            (2, 6, 2150),  # Brasilia-Manaus (long link)
+            
+            # South region
+            (0, 7, 410),   # SP-Curitiba
+            (7, 16, 300),  # Curitiba-Florianopolis
+            (16, 9, 470),  # Florianopolis-Porto Alegre
+            (7, 9, 710),   # Curitiba-Porto Alegre
+            
+            # Cross-country links
+            (2, 3, 1060),  # Brasilia-Salvador
+            (5, 3, 1370),  # BH-Salvador
+            (10, 0, 910),  # Goiania-SP
+            (15, 9, 1040), # Campo Grande-Porto Alegre
+            (15, 7, 1010), # Campo Grande-Curitiba
+            
+            # Coastal connections
+            (1, 13, 520),  # Rio-Vitoria
+            (13, 3, 1200), # Vitoria-Salvador
+            
+            # Additional redundancy
+            (11, 2, 920),  # Campinas-Brasilia
+        ]
+
+        for u, v, dist in edges:
+            G.add_edge(u, v, distance=dist, weight=dist)
+
+        return G
+
+
 class RMSAEnv(gym.Env):
     """Routing, Modulation and Spectrum Assignment environment."""
 
@@ -76,8 +419,18 @@ class RMSAEnv(gym.Env):
         # Create network topology
         if topology == "NSFNET":
             self.graph = NSFNETTopology.create_graph()
+        elif topology == "USNET":
+            self.graph = USNETTopology.create_graph()
+        elif topology == "EURO":
+            self.graph = EUROTopology.build()
+        elif topology == "UKNET":
+            self.graph = UKNETTopology.build()
+        elif topology == "JAPAN":
+            self.graph = JAPANTopology.build()
+        elif topology == "BRAZIL":
+            self.graph = BRAZILTopology.build()
         else:
-            raise ValueError(f"Unknown topology: {topology}")
+            raise ValueError(f"Unknown topology: {topology}. Available: NSFNET, USNET, EURO, UKNET, JAPAN, BRAZIL")
 
         self.num_nodes = self.graph.number_of_nodes()
         self.num_edges = self.graph.number_of_edges()
