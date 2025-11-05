@@ -5,6 +5,7 @@ Orquesta la demo épica de 10 minutos comparando 6 agentes de RL optimizando RMS
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -61,6 +62,41 @@ class DemoOrchestrator:
         self.factory = EnvironmentFactory(base_kwargs={**ENVIRONMENT.as_dict(), "topology": topology})
         self.agents: Dict[str, AgentState] = {}
         self.current_episode = 0
+        self.live_data_file = Path("live_battle_data.json")
+        
+    def _write_live_data(self) -> None:
+        """Escribe datos en tiempo real al archivo JSON para el dashboard."""
+        data = {
+            'current_episode': self.current_episode,
+            'total_episodes': self.episodes,
+            'agents': {}
+        }
+        
+        for name, agent_state in self.agents.items():
+            history = agent_state.history
+            
+            # Extraer métricas desde los records (usar nombres correctos de EpisodeRecord)
+            episodes = list(range(1, len(history.records) + 1))
+            rewards = [r.cumulative_reward for r in history.records]
+            blocking = [r.blocking_probability * 100 for r in history.records]
+            spectral = [r.spectral_efficiency * 100 for r in history.records]
+            qot = [r.qot for r in history.records]
+            latency = [r.decision_latency_ms for r in history.records]
+            
+            data['agents'][name] = {
+                'episodes': episodes,
+                'rewards': rewards,
+                'blocking': blocking,
+                'spectral_efficiency': spectral,
+                'qot': qot,
+                'latency': latency
+            }
+        
+        # Escribir atomically
+        temp_file = self.live_data_file.with_suffix('.tmp')
+        with open(temp_file, 'w') as f:
+            json.dump(data, f)
+        temp_file.replace(self.live_data_file)
         
     def _load_agent(self, name: str) -> Optional[AgentState]:
         """Carga un agente entrenado desde disco."""
@@ -224,8 +260,13 @@ class DemoOrchestrator:
         
         with visualizer:
             for episode in range(1, self.episodes + 1):
+                self.current_episode = episode
                 snapshot = self._run_episode(episode)
                 visualizer.update(snapshot)
+                
+                # Escribir datos en tiempo real para el dashboard
+                self._write_live_data()
+                
                 time.sleep(0.05)  # Control refresh rate (~20 FPS)
         
         # Final statistics
@@ -270,9 +311,21 @@ class DemoOrchestrator:
         console.print(table)
         console.print("\n" + "="*80 + "\n")
         
-        # Winner declaration
-        winner_name = max(self.agents.items(), key=lambda x: x[1].total_reward)[0]
-        console.print(f"[bold yellow]🏆 WINNER: {winner_name}! 🏆[/bold yellow]\n")
+        # Winner declaration using composite score
+        def calculate_score(agent_state):
+            """Calculate composite score: (reward × 100) + (spectral × 50) + (qot × 30) - (blocking × 200)"""
+            metrics = agent_state.tracker.snapshot()
+            blocking = metrics.get("blocking", 1.0)
+            spectral = metrics.get("spectral_efficiency", 0.0)
+            qot = metrics.get("qot", 0.0)
+            avg_reward = agent_state.total_reward / max(agent_state.requests_processed, 1)
+            
+            score = (avg_reward * 100) + (spectral * 50) + (qot * 30) - (blocking * 200)
+            return score
+        
+        winner_name = max(self.agents.items(), key=lambda x: calculate_score(x[1]))[0]
+        winner_score = calculate_score(self.agents[winner_name])
+        console.print(f"[bold yellow]🏆 WINNER: {winner_name}! (Score: {winner_score:+.2f}) 🏆[/bold yellow]\n")
 
 
 def parse_args():
@@ -286,22 +339,96 @@ def parse_args():
     parser.add_argument("--episodes", type=int, default=200, help="Number of episodes to run")
     parser.add_argument("--topology", type=str, default="NSFNET", help="Network topology")
     parser.add_argument("--seed", type=int, default=31415, help="Random seed")
+    parser.add_argument(
+        "--extreme",
+        action="store_true",
+        help="Use EXTREME battle configuration (USNET, 95%% load, 100 slots)",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     
+    # Use extreme configuration if requested
+    if args.extreme:
+        from battle_config_extreme import EXTREME_ENVIRONMENT, EXTREME_DEMO, get_extreme_battle_description
+        
+        console.print(Panel(
+            get_extreme_battle_description(),
+            title="[bold red]🔥 EXTREME MODE ACTIVATED 🔥[/bold red]",
+            border_style="bold red",
+        ))
+        time.sleep(3)
+        
+        # Override environment settings
+        from environment import EnvironmentFactory
+        factory = EnvironmentFactory(base_kwargs=EXTREME_ENVIRONMENT.as_dict())
+        
+        # Use extreme topology and episodes
+        topology = EXTREME_ENVIRONMENT.topology
+        episodes = args.episodes if args.episodes != 200 else EXTREME_DEMO.demo_requests
+        
+    else:
+        topology = args.topology
+        episodes = args.episodes
+    
     orchestrator = DemoOrchestrator(
         agents_to_load=args.agents,
-        episodes=args.episodes,
-        topology=args.topology,
+        episodes=episodes,
+        topology=topology,
         seed=args.seed,
     )
     
     battle_metrics = orchestrator.run()
     
     console.print("[bold green]✓ Battle Royale completed successfully![/bold green]")
+    
+    # Auto-generate dashboards if battle metrics are valid
+    if battle_metrics.histories:
+        console.print("\n[bold cyan]📊 Generating Advanced Dashboards...[/bold cyan]\n")
+        
+        try:
+            from plotly_dashboard import generate_dashboards_from_battle
+            from network_visualizer import NetworkVisualizer
+            from presentation_visualizer import generate_presentation_visualizations
+            
+            # Generate Plotly dashboards
+            console.print("  [yellow]→[/yellow] Creating comprehensive analysis dashboard...")
+            generate_dashboards_from_battle(battle_metrics, output_dir="dashboards")
+            console.print("  [green]✓[/green] Dashboards saved to [cyan]dashboards/[/cyan]")
+            
+            # Generate presentation visualizations
+            console.print("  [yellow]→[/yellow] Creating presentation-ready visualizations...")
+            generate_presentation_visualizations(battle_metrics, output_dir="presentation_viz")
+            console.print("  [green]✓[/green] Presentation visualizations saved to [cyan]presentation_viz/[/cyan]")
+            
+            # Generate network visualizations
+            console.print("  [yellow]→[/yellow] Creating network topology comparisons...")
+            viz = NetworkVisualizer()
+            viz.save_all_visualizations()
+            console.print("  [green]✓[/green] Network visualizations saved to [cyan]network_viz/[/cyan]")
+            
+            console.print("\n[bold green]🎉 All visualizations generated successfully![/bold green]")
+            console.print("\n[bold yellow]📁 Open these files to view results:[/bold yellow]")
+            console.print("\n[bold cyan]Main Dashboards:[/bold cyan]")
+            console.print("  • [cyan]dashboards/comprehensive_analysis.html[/cyan]")
+            console.print("  • [cyan]dashboards/statistical_tests.html[/cyan]")
+            console.print("\n[bold cyan]Presentation Visualizations:[/bold cyan]")
+            console.print("  • [cyan]presentation_viz/box_plot_comparison.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/radar_chart.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/violin_plot.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/correlation_heatmap.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/3d_scatter.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/time_series.html[/cyan]")
+            console.print("  • [cyan]presentation_viz/ranking_table.html[/cyan]")
+            console.print("\n[bold cyan]Network Visualizations:[/bold cyan]")
+            console.print("  • [cyan]network_viz/all_topologies_comparison.html[/cyan]")
+            
+        except Exception as e:
+            console.print(f"[yellow]⚠ Could not generate dashboards: {e}[/yellow]")
+            import traceback
+            traceback.print_exc()
 
 
 if __name__ == "__main__":

@@ -89,15 +89,20 @@ class StatisticalDashboard:
             episodes = [r.episode for r in history.records]
             qot = [r.qot for r in history.records]
             
+            # Convert hex to rgba for opacity
+            hex_color = self.colors.get(name, "#95a5a6")
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))
+            rgba_color = f"rgba({rgb[0]},{rgb[1]},{rgb[2]},0.2)"
+            
             fig.add_trace(
                 go.Scatter(
                     x=episodes,
                     y=qot,
                     mode='lines',
                     name=name,
-                    line=dict(color=self.colors.get(name, "#95a5a6"), width=2),
+                    line=dict(color=hex_color, width=2),
                     fill='tozeroy',
-                    fillcolor=self.colors.get(name, "#95a5a6") + "33",  # 20% opacity
+                    fillcolor=rgba_color,
                 ),
                 row=2, col=1
             )

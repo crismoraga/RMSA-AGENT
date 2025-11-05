@@ -43,13 +43,13 @@ class NetworkVisualizer:
         """Construye grafos NetworkX para todas las topologías."""
         
         for name, topology_class in self.TOPOLOGY_MAP.items():
-            # Get topology data
-            nodes, links = topology_class.create()
-            
-            # Build graph
-            G = nx.Graph()
-            G.add_nodes_from(nodes)
-            G.add_edges_from(links)
+            # Get topology graph - support both create_graph() and build() methods
+            if hasattr(topology_class, 'create_graph'):
+                G = topology_class.create_graph()
+            elif hasattr(topology_class, 'build'):
+                G = topology_class.build()
+            else:
+                raise AttributeError(f"{topology_class.__name__} has neither create_graph() nor build() method")
             
             # Calculate layout (spring layout for aesthetic positioning)
             pos = nx.spring_layout(G, seed=42, k=2, iterations=50)

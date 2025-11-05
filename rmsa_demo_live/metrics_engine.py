@@ -49,6 +49,25 @@ class AgentHistory:
 
     def latest(self) -> Optional[EpisodeRecord]:
         return self.records[-1] if self.records else None
+    
+    # Convenience methods for common metrics
+    def mean_blocking(self) -> float:
+        return self.mean("blocking_probability")
+    
+    def mean_spectral_efficiency(self) -> float:
+        return self.mean("spectral_efficiency")
+    
+    def mean_qot(self) -> float:
+        return self.mean("qot")
+    
+    def mean_reward(self) -> float:
+        return self.mean("cumulative_reward")
+    
+    def mean_latency_ms(self) -> float:
+        return self.mean("decision_latency_ms")
+    
+    def std_blocking(self) -> float:
+        return self.std("blocking_probability")
 
 
 @dataclass

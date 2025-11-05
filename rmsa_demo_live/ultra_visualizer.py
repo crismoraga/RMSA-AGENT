@@ -123,35 +123,69 @@ def _metric_table(snapshot: AgentSnapshot) -> Panel:
 
 
 def _scoreboard_panel(snapshot: BattleSnapshot) -> Panel:
+    """Build the scoreboard table showing agent ranking with comprehensive scoring."""
     table = Table(box=box.SIMPLE_HEAVY)
     table.add_column("Rank", justify="center", style="bold white")
     table.add_column("Agente", style="bold")
+    table.add_column("Score", justify="right")
     table.add_column("Blocking", justify="right")
+    table.add_column("Spectral", justify="right")
+    table.add_column("QoT", justify="right")
     table.add_column("Reward", justify="right")
 
-    # Rank agents by blocking probability (lower better)
+    # Calculate composite score for each agent (lower blocking + higher metrics = better)
+    def calculate_score(agent: AgentSnapshot) -> float:
+        blocking = agent.metrics.get("blocking", 1.0)
+        spectral = agent.metrics.get("spectral_efficiency", 0.0)
+        qot = agent.metrics.get("qot", 0.0)
+        reward = agent.metrics.get("cumulative_reward", agent.shaped_reward)
+        
+        # Composite score: reward heavily weighted, spectral and QoT important, blocking penalized
+        # Score = (reward * 100) + (spectral * 50) + (qot * 30) - (blocking * 200)
+        score = (reward * 100) + (spectral * 50) + (qot * 30) - (blocking * 200)
+        return score
+
+    # Rank agents by composite score (higher better)
     sorted_agents = sorted(
         snapshot.agents,
-        key=lambda agent: agent.metrics.get("blocking", 1.0),
+        key=calculate_score,
+        reverse=True,
     )
+    
     for idx, agent in enumerate(sorted_agents, 1):
+        score = calculate_score(agent)
         blocking = agent.metrics.get("blocking", 1.0)
+        spectral = agent.metrics.get("spectral_efficiency", 0.0)
+        qot = agent.metrics.get("qot", 0.0)
         reward = agent.metrics.get("cumulative_reward", agent.shaped_reward)
+        
+        # Highlight top 3 with medals
+        rank_str = f"#{idx}"
+        if idx == 1:
+            rank_str = "🥇"
+        elif idx == 2:
+            rank_str = "🥈"
+        elif idx == 3:
+            rank_str = "🥉"
+        
         table.add_row(
-            f"#{idx}",
+            rank_str,
             f"[{agent.resolve_color()}]{agent.name}[/{agent.resolve_color()}]",
+            f"[bold cyan]{score:+.1f}[/bold cyan]",
             _format_metric("blocking", blocking),
+            f"{spectral:.2%}",
+            f"{qot:.3f}",
             _format_metric("cumulative_reward", reward),
         )
 
     footer = Text()
-    footer.append("Highlight: ", style="bold yellow")
-    highlight = snapshot.highlight_agent or sorted_agents[0].name
-    footer.append(highlight, style=AGENT_COLOR_MAP.get(highlight.upper(), "white"))
+    footer.append("🏆 Champion: ", style="bold yellow")
+    champion = sorted_agents[0].name
+    footer.append(champion, style=AGENT_COLOR_MAP.get(champion.upper(), "white"))
     if snapshot.significance:
         footer.append(f"  |  {snapshot.significance}", style="bold green")
 
-    return Panel(Group(table, footer), title="Battle Ranking", border_style="yellow")
+    return Panel(Group(table, footer), title="🏆 Battle Ranking - Comprehensive Scoring", border_style="yellow")
 
 
 def _create_banner(snapshot: BattleSnapshot) -> Panel:
