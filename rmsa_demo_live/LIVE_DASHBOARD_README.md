@@ -2,13 +2,27 @@
 
 ## 📊 Descripción
 
-Dashboard web interactivo que muestra **9 visualizaciones dinámicas** actualizándose automáticamente cada segundo durante el Battle Royale.
+Dashboard web interactivo que muestra **11 visualizaciones dinámicas** actualizándose automáticamente cada segundo durante el Battle Royale.
 
 ### ✨ Características
 
 - **⚡ Actualización en Tiempo Real**: Los gráficos se refrescan cada 1 segundo
-- **📊 9 Visualizaciones Simultáneas**:
-  1. **Rewards Evolution** - Line chart de rewards por episodio
+- **📊 11 Visualizaciones Simultáneas**:
+  1. **Rewards Evolution** - Line chart de rewards acumulados por episodio
+  2. **Blocking Probability** - Line chart de probabilidad de bloqueo
+  3. **Blocking Distribution** - Pie chart (donut) de distribución actual
+  4. **Spectral Efficiency** - Bar chart con gradiente Viridis
+  5. **QoT Gauge** - Gauge chart estilo velocímetro de calidad de transmisión
+  6. **Radar Comparison** - Radar chart 5D comparando todas las métricas
+  7. **Ranking Bars** - Bar chart horizontal con ranking por score compuesto
+  8. **Latency Comparison** - Line chart de latencias de decisión (NEW!)
+  9. **Performance Heatmap** - Heatmap de métricas normalizadas (NEW!)
+  10. **All Metrics Time Series** - Grid 2x2 con evolución de todas las métricas
+  11. **Status Banner** - Progreso actual del battle
+
+- **🎨 Diseño Oscuro Profesional**: Template Plotly Dark optimizado
+- **📱 Responsive**: Se adapta a diferentes tamaños de pantalla
+- **🔒 Manejo Robusto de Errores**: Verifica puerto disponible, crea archivos iniciales
   2. **Blocking Probability** - Line chart de blocking % por episodio
   3. **Blocking Distribution** - Pie chart del blocking actual
   4. **Spectral Efficiency** - Bar chart de eficiencia espectral

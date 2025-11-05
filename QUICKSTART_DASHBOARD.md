@@ -1,125 +1,236 @@
-# ⚡ QUICK START - Dashboard Live + Battle Royale
+# ⚡ QUICKSTART - Dashboard Live + Battle Royale
 
-## 🎯 TODO EN 1 COMANDO
+## 🚀 Inicio Ultra-Rápido (1 Comando)
+
+### Opción 1: Modo EXTREME con Dashboard (RECOMENDADO)
 
 ```powershell
 python rmsa_demo_live/launch_with_dashboard.py --extreme
 ```
 
-**Esto hace automáticamente:**
-1. ✅ Inicia dashboard web en http://localhost:8050
-2. ✅ Abre navegador automáticamente
-3. ✅ Ejecuta Battle Royale EXTREME (2000 episodios)
-4. ✅ Actualiza 9 gráficos en tiempo real cada segundo
-5. ✅ Al finalizar, detiene todo limpiamente
+**Esto hace:**
 
-**Duración:** ~15 minutos  
-**Visualizaciones:** 9 dinámicas + 17 estáticas (generadas al final)
+- ✅ Verifica que el puerto 8050 esté disponible
+- ✅ Crea archivo de datos inicial `live_battle_data.json`
+- ✅ Inicia servidor web en <http://localhost:8050>
+- ✅ Abre automáticamente el dashboard en tu navegador
+- ✅ Ejecuta Battle Royale de 2000 episodios en NSFNET
+- ✅ Actualiza 11 gráficos cada segundo en tiempo real
 
----
-
-## 🎨 VISUALIZACIONES EN TIEMPO REAL (9)
-
-En el navegador verás (actualizándose cada 1 segundo):
-
-1. **Rewards Evolution** - Line chart de rewards
-2. **Blocking Probability** - Line chart de blocking %
-3. **Blocking Distribution** - Pie chart de bloqueo actual
-4. **Spectral Efficiency** - Bar chart de eficiencia espectral
-5. **QoT Gauge** - Velocímetro de calidad de transmisión
-6. **Radar Comparison** - Comparación multidimensional 5D
-7. **Current Ranking** - Ranking actual por score compuesto
-8. **All Metrics Time Series** - Grid 2×2 con 4 métricas
-9. **Status Banner** - Progreso (episodio X/Y)
+**Duración:** 10-15 minutos  
+**Visualizaciones:** 11 gráficos dinámicos simultáneos
 
 ---
 
-## 🔧 OPCIONES
+### Opción 2: Modo Normal con Dashboard
 
-### Batalla Normal (200 episodios, ~3 minutos)
 ```powershell
-python rmsa_demo_live/launch_with_dashboard.py
+python rmsa_demo_live/launch_with_dashboard.py --episodes 200
 ```
 
-### Custom Episodes
+**Duración:** 3-5 minutos  
+**Ideal para:** Testing rápido
+
+---
+
+## 📊 ¿Qué Verás en el Dashboard?
+
+### 11 Visualizaciones en Tiempo Real
+
+1. **📈 Rewards Evolution** - Line chart de recompensas acumuladas
+2. **🚫 Blocking Probability** - Probabilidad de bloqueo por episodio
+3. **🍩 Blocking Distribution** - Donut chart de distribución actual
+4. **📊 Spectral Efficiency** - Bar chart con gradiente Viridis
+5. **🎯 QoT Gauge** - Velocímetro de calidad de transmisión
+6. **🕸️ Radar Comparison** - 5D radar (reward, spectral, qot, blocking, latency)
+7. **🏆 Current Ranking** - Ranking horizontal con score compuesto
+8. **⚡ Latency Comparison** - Comparación de latencias de decisión (NEW!)
+9. **🔥 Performance Heatmap** - Heatmap de métricas normalizadas (NEW!)
+10. **📊 All Metrics Time Series** - Grid 2x2 con todas las métricas
+11. **📢 Status Banner** - Progreso actual (episodio X/Total)
+
+---
+
+## 🔧 Solución de Problemas
+
+### Error: "ERR_CONNECTION_REFUSED"
+
+**Causa:** El servidor del dashboard no pudo iniciarse.
+
+**Soluciones:**
+
+1. **Verificar dependencias:**
+
 ```powershell
-python rmsa_demo_live/launch_with_dashboard.py --episodes 500
+pip install dash plotly numpy
 ```
 
-### Sin Dashboard (Solo Terminal)
+2. **Ejecutar dashboard manualmente para ver errores:**
+
+```powershell
+python rmsa_demo_live/live_dashboard.py
+```
+
+3. **El launcher ahora verifica automáticamente:**
+   - Puerto 8050 disponible
+   - Crea `live_battle_data.json` si no existe
+   - Muestra errores detallados si falla el inicio
+
+---
+
+### Error: "Address already in use"
+
+**Solución:**
+
+```powershell
+# Cerrar proceso que usa puerto 8050
+# En Windows PowerShell:
+netstat -ano | findstr :8050
+# Tomar el PID y:
+taskkill /PID <PID> /F
+```
+
+---
+
+### Dashboard abre pero no muestra datos
+
+**Causa:** Battle Royale no se está ejecutando o no escribe JSON.
+
+**Verificar:**
+
+1. Que el terminal muestre el progreso del battle
+2. Que exista `live_battle_data.json` en la carpeta raíz
+3. Que el archivo JSON se actualice (ver última modificación)
+
+**Solución rápida:**
+
+```powershell
+# Detener todo (Ctrl+C)
+# Borrar archivo viejo
+Remove-Item live_battle_data.json -ErrorAction SilentlyContinue
+# Re-ejecutar launcher
+python rmsa_demo_live/launch_with_dashboard.py --extreme
+```
+
+---
+
+## 💡 Tips de Uso
+
+### Ver solo el dashboard (sin battle)
+
+```powershell
+python rmsa_demo_live/live_dashboard.py
+```
+
+Útil para:
+
+- Testing de visualizaciones
+- Debugging
+- Ver datos de una ejecución previa
+
+---
+
+### Ejecutar solo el battle (sin dashboard)
+
 ```powershell
 python rmsa_demo_live/demo_orchestrator.py --extreme
 ```
 
+Útil para:
+
+- Ejecutar múltiples battles en paralelo
+- Análisis estadístico posterior
+- Cuando no necesitas visualización en vivo
+
 ---
 
-## 🐛 TROUBLESHOOTING
+## 🎨 Personalización
 
-### Dashboard no abre
-**Solución:** Abre manualmente http://localhost:8050
+### Cambiar puerto del dashboard
 
-### Puerto 8050 ocupado
-```powershell
-# Ver qué está usando el puerto
-netstat -ano | findstr :8050
+Editar `live_dashboard.py` línea ~571:
 
-# Detener proceso
-taskkill /PID <PID> /F
+```python
+dashboard.run(debug=False, port=9000)  # Cambiar de 8050 a 9000
 ```
 
-### Gráficos no se actualizan
-**Solución:** Refresca el navegador (F5) o reinicia el launcher
+### Cambiar intervalo de actualización
+
+Editar `live_dashboard.py` línea ~50:
+
+```python
+interval=2000,  # Cambiar de 1000ms (1s) a 2000ms (2s)
+```
+
+### Agregar más visualizaciones
+
+Ver `live_dashboard.py` métodos `_create_*` para ejemplos de:
+
+- Line charts
+- Pie charts
+- Bar charts
+- Radar charts
+- Gauge charts
+- Heatmaps
+- Subplots
 
 ---
 
-## 📊 ARCHIVOS GENERADOS
+## 📖 Documentación Completa
 
-**Durante la batalla:**
-- `live_battle_data.json` - Datos en tiempo real (actualizado cada episodio)
+Para más detalles, ver:
 
-**Al finalizar:**
+- `LIVE_DASHBOARD_README.md` - Documentación completa del dashboard
+- `EXTREME_MODE_README.md` - Detalles del modo EXTREME
+- `CORRECCIONES_DASHBOARD_LIVE.md` - Historial de correcciones
+
+---
+
+## 🏆 Resultados Post-Battle
+
+Después de completar el battle, se generan automáticamente:
+
+### Dashboards Estáticos (HTML)
+
 - `dashboards/comprehensive_analysis.html`
 - `dashboards/statistical_tests.html`
-- `presentation_viz/*.html` (7 archivos)
-- `network_viz/*.html` (8 archivos)
+
+### Visualizaciones de Presentación
+
+- `presentation_viz/box_plot_comparison.html`
+- `presentation_viz/radar_chart.html`
+- `presentation_viz/violin_plot.html`
+- `presentation_viz/correlation_heatmap.html`
+- `presentation_viz/3d_scatter.html`
+- `presentation_viz/time_series.html`
+- `presentation_viz/ranking_table.html`
+
+### Visualizaciones de Red
+
+- `network_viz/all_topologies_comparison.html`
+- `network_viz/nsfnet_topology.html`
+- ... (6 topologías individuales)
+
+**Total:** 17+ archivos HTML interactivos listos para presentaciones
 
 ---
 
-## 🎯 PARÁMETROS EXTREME MODE
-
-| Parámetro | Normal | EXTREME | Cambio |
-|-----------|--------|---------|--------|
-| Topología | NSFNET | NSFNET | - |
-| Slots | 196 | 80 | -59% |
-| Carga | 80% | 95% | +19% |
-| Steps/Episodio | 100 | 300 | +200% |
-| Total Episodios | 200 | 2000 | +900% |
-
-**Objetivo:** Forzar bloqueos y separar claramente a los mejores agentes.
-
----
-
-## 🏆 SIGUIENTE PASO
-
-Una vez terminada la batalla, usa los HTML generados para tu presentación:
+## 🚀 Comandos Rápidos
 
 ```powershell
-# Ver ranking final
-start presentation_viz/ranking_table.html
-
-# Ver radar chart
-start presentation_viz/radar_chart.html
-
-# Ver comparación de topologías
-start network_viz/all_topologies_comparison.html
-```
-
----
-
-**¿Listo para empezar? Ejecuta:**
-
-```powershell
+# EXTREME con dashboard (15 min)
 python rmsa_demo_live/launch_with_dashboard.py --extreme
+
+# Normal con dashboard (5 min)
+python rmsa_demo_live/launch_with_dashboard.py --episodes 200
+
+# Rápido sin dashboard (1 min)
+python rmsa_demo_live/demo_orchestrator.py --episodes 50
+
+# Solo dashboard (para testing)
+python rmsa_demo_live/live_dashboard.py
 ```
 
-🚀 ¡Enjoy the show!
+---
+
+**¡Listo!** 🎉 Ahora tienes el sistema de visualización en tiempo real más avanzado del proyecto.
